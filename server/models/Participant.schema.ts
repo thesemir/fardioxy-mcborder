@@ -36,11 +36,6 @@ export default defineMongooseModel({
       default: function() {
         return 'BL-' + Math.floor(1000 + Math.random() * 9000);
       }
-    },
-    status: {
-      type: String,
-      enum: ['pending', 'accepted', 'rejected'],
-      default: 'pending'
     }
   },
   schemaOptions: {

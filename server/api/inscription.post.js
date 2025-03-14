@@ -1,6 +1,6 @@
+// server/api/inscription.post.js
 import ParticipantSchema from "../models/Participant.schema";
 
-// server/api/inscription.post.js
 export default defineEventHandler(async (event) => {
     try {
       // Récupérer les données du formulaire
@@ -15,11 +15,10 @@ export default defineEventHandler(async (event) => {
       }
       
       // Utiliser le modèle Mongoose
-      // Dans Nuxt Mongoose, nous utilisons useModel pour accéder au modèle
-      const Participant = ParticipantSchema();
+      const Participant = ParticipantSchema;
       
       // Vérifier si l'utilisateur est déjà inscrit (par email ou pseudo minecraft)
-      const existingParticipant = await ParticipantSchema.findOne({
+      const existingParticipant = await Participant.findOne({
         $or: [
           { email: formData.email },
           { minecraftUsername: formData.minecraftUsername }
@@ -34,9 +33,8 @@ export default defineEventHandler(async (event) => {
       }
       
       // Créer un nouveau participant dans la base de données
-      const participant = await ParticipantSchema.create({
-        ...formData,
-        status: 'accepted'  // Pour l'exemple, nous acceptons automatiquement l'inscription
+      const participant = await Participant.create({
+        ...formData
       });
       
       // Retourner une réponse avec le registrationId que nous utiliserons pour la redirection
@@ -44,8 +42,7 @@ export default defineEventHandler(async (event) => {
         success: true,
         id: participant.registrationId,
         message: 'Inscription enregistrée avec succès',
-        createdAt: participant.createdAt,
-        status: participant.status
+        createdAt: participant.createdAt
       };
       
     } catch (error) {

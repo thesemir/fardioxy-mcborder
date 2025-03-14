@@ -1,4 +1,7 @@
 // models/Participant.js
+import { defineMongooseModel } from '#nuxt/mongoose'
+
+
 export default defineMongooseModel('Participant', {
     schema: {
       // Informations réelles

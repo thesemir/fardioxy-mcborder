@@ -1,3 +1,5 @@
+import ParticipantSchema from "~/server/models/Participant.schema";
+
 // server/api/admin/participants.get.js
 export default defineEventHandler(async (event) => {
     try {
@@ -5,7 +7,7 @@ export default defineEventHandler(async (event) => {
       // TODO: Ajouter un middleware d'authentification
       
       // Récupérer les participants depuis la base de données
-      const Participant = useModel('Participant');
+      const Participant = ParticipantSchema('Participant');
       
       // Récupérer tous les participants (avec pagination basique)
       const page = parseInt(getQuery(event).page) || 1;

@@ -4,7 +4,7 @@ export default defineEventHandler(async (event) => {
       // Récupérer les données du formulaire
       const formData = await readBody(event);
       
-      // Validation des données (à personnaliser selon vos besoins)
+      // Validation des données
       if (!formData.realName || !formData.discordId || !formData.minecraftUsername) {
         return createError({
           statusCode: 400,
@@ -12,33 +12,37 @@ export default defineEventHandler(async (event) => {
         });
       }
       
-      // Ici, vous pourriez enregistrer les données dans une base de données
-      // Exemple avec MongoDB (nécessite le package @nuxt/mongodb):
-      /*
-      const { db } = useRuntimeConfig().mongodb;
-      const collection = db.collection('participants');
-      const result = await collection.insertOne({
-        ...formData,
-        createdAt: new Date(),
-        status: 'pending'
+      // Utiliser le modèle Mongoose pour enregistrer les données
+      const Participant = useModel('Participant');
+      
+      // Vérifier si l'utilisateur est déjà inscrit (par email ou pseudo minecraft)
+      const existingParticipant = await Participant.findOne({
+        $or: [
+          { email: formData.email },
+          { minecraftUsername: formData.minecraftUsername }
+        ]
       });
-      const id = result.insertedId;
-      */
       
-      // Pour cet exemple, on simule un délai d'enregistrement
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      if (existingParticipant) {
+        return createError({
+          statusCode: 409,
+          message: 'Un utilisateur avec cet email ou ce pseudo Minecraft est déjà inscrit'
+        });
+      }
       
-      // Générer un ID unique pour l'inscription
-      const id = 'BL-' + Math.floor(1000 + Math.random() * 9000);
+      // Créer un nouveau participant dans la base de données
+      const participant = await Participant.create({
+        ...formData,
+        status: 'pending'  // Par défaut, toutes les inscriptions sont en attente de validation
+      });
       
       // Retourner une réponse
       return {
         success: true,
-        id: id,
+        id: participant.registrationId,
         message: 'Inscription enregistrée avec succès',
-        // Vous pouvez retourner d'autres données si nécessaire
-        createdAt: new Date(),
-        status: 'accepted'
+        createdAt: participant.createdAt,
+        status: participant.status
       };
       
     } catch (error) {

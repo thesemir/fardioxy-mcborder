@@ -213,17 +213,15 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 
 // Vérification de l'environnement côté client
 const isBrowser = typeof window !== 'undefined'
 
 // États et références pour le formulaire
-const router = useRouter();
 const container = ref(null)
-const isSubmitting = ref(false);
-const errorMessage = ref('');
+const isSubmitting = ref(false)
+const errorMessage = ref('')
 const particlesCount = ref(40)
 const windowDimensions = ref({ width: 0, height: 0 })
 const scrollY = ref(0)
@@ -362,6 +360,9 @@ const submitForm = async () => {
   try {
     // Afficher un indicateur de chargement
     isSubmitting.value = true;
+    errorMessage.value = '';
+    
+    console.log("Envoi du formulaire à l'API...");
     
     // Appel à l'API Nuxt.js
     const response = await $fetch('/api/inscription', {
@@ -369,18 +370,61 @@ const submitForm = async () => {
       body: form.value
     });
     
-    // Rediriger vers la page de confirmation avec les détails
-    navigateTo('/confirmation', { 
-      query: { 
-        id: response.id,
-        nom: form.value.rpName 
+    console.log("Réponse de l'API:", response);
+    
+    // Vérification du format de la réponse
+    if (response && response.id) {
+      console.log(`ID de confirmation reçu: ${response.id}`);
+      
+      // Essayons d'abord d'utiliser la navigation programmatique avec l'API Nuxt
+      console.log(`Tentative de redirection vers: /confirmation/${response.id}`);
+      
+      // Version avec attente pour s'assurer que la promesse est résolue
+      try {
+        await navigateTo(`/confirmation/${response.id}`, { 
+          replace: true
+        });
+      } catch (navError) {
+        console.error("Erreur lors de la navigation:", navError);
+        
+        // Fallback: utiliser window.location directement
+        console.log("Tentative avec window.location...");
+        window.location.href = `/confirmation/${response.id}`;
       }
-    });
+    } else if (response && response.success) {
+      // Cas alternatif où l'ID serait renvoyé avec une structure différente
+      console.log("Réponse de succès mais pas d'ID direct, recherche alternative...");
+      
+      // Si la réponse n'a pas d'ID direct mais a un registrationId
+      if (response.registrationId) {
+        console.log(`RegistrationID trouvé: ${response.registrationId}`);
+        window.location.href = `/confirmation/${response.registrationId}`;
+      } else {
+        // Si la page de confirmation a besoin de paramètres de requête différents
+        console.log("Tentative de redirection vers /confirmation avec ID en query param");
+        window.location.href = `/confirmation?id=${response.id || response._id || ''}`;
+      }
+    } else {
+      console.error("Réponse reçue mais pas d'ID:", response);
+      throw new Error('ID de confirmation manquant dans la réponse');
+    }
     
   } catch (error) {
     // Gérer les erreurs
     console.error('Erreur lors de la soumission:', error);
-    errorMessage.value = "Une erreur est survenue. Veuillez réessayer.";
+    
+    if (error.response) {
+      console.log("Détails de l'erreur:", error.response);
+      
+      if (error.response.status === 409) {
+        errorMessage.value = "Un utilisateur avec cet email ou ce pseudo Minecraft est déjà inscrit.";
+      } else {
+        errorMessage.value = `Erreur (${error.response.status}): ${error.response.statusText || 'Erreur serveur'}`;
+      }
+    } else {
+      errorMessage.value = "Une erreur est survenue. Veuillez réessayer.";
+    }
+    
     isSubmitting.value = false;
   }
 }
@@ -422,6 +466,14 @@ const setupDynamicCardEffects = () => {
   });
 }
 
+// Fonction pour nettoyer les intervalles
+const cleanupIntervals = () => {
+  if (!isBrowser) return
+  
+  // Impossible de nettoyer tous les intervalles individuellement car ils ne sont pas stockés
+  // En production, il faudrait stocker les références aux intervalles pour pouvoir les nettoyer correctement
+}
+
 // Cycle de vie
 onMounted(() => {
   if (!isBrowser) return
@@ -436,17 +488,18 @@ onMounted(() => {
   // Animation du formulaire
   const formContainer = document.querySelector('.form-container');
   setTimeout(() => {
-    formContainer.classList.add('visible');
+    formContainer?.classList.add('visible');
   }, 300);
   
   setupDynamicCardEffects()
 })
 
-onUnmounted(() => {
+onBeforeUnmount(() => {
   if (!isBrowser) return
   
   window.removeEventListener('resize', updateWindowDimensions)
   window.removeEventListener('scroll', handleScroll)
+  cleanupIntervals()
 })
 </script>
 

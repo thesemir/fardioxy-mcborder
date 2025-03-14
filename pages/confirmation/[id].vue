@@ -13,33 +13,7 @@
       </div>
   
       <div class="container mx-auto px-4 py-12 relative z-10">
-        <div v-if="isLoading" class="flex justify-center items-center h-64">
-          <div class="loader"></div>
-        </div>
-        
-        <div v-else-if="error" class="max-w-3xl mx-auto bg-gray-800/90 backdrop-blur-sm rounded-lg border-2 border-red-600/50 p-8 error-container">
-          <div class="flex justify-center mb-6">
-            <div class="w-24 h-24 rounded-full bg-red-500/20 flex items-center justify-center border-4 border-red-500">
-              <svg class="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
-            </div>
-          </div>
-          
-          <h2 class="text-4xl font-bold mb-6 text-red-500 minecraft-font text-center">Erreur</h2>
-          <p class="text-xl text-center text-amber-100 mb-6">{{ error }}</p>
-          
-          <div class="flex justify-center mt-8">
-            <NuxtLink 
-              to="/inscription" 
-              class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-8 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 relative overflow-hidden pulse-button"
-            >
-              <span class="relative z-10">Retour à l'inscription</span>
-            </NuxtLink>
-          </div>
-        </div>
-        
-        <div v-else-if="participant" class="max-w-3xl mx-auto bg-gray-800/90 backdrop-blur-sm rounded-lg border-2 border-amber-600/50 p-8 confirmation-container">
+        <div class="max-w-3xl mx-auto bg-gray-800/90 backdrop-blur-sm rounded-lg border-2 border-amber-600/50 p-8 confirmation-container">
           <!-- Icône de succès -->
           <div class="flex justify-center mb-6">
             <div class="w-24 h-24 rounded-full bg-green-500/20 flex items-center justify-center border-4 border-green-500">
@@ -53,18 +27,18 @@
           
           <div class="success-card p-6 bg-gray-900/80 rounded-lg border border-amber-600/30 mb-8">
             <p class="text-xl text-center text-amber-100 mb-4">
-              Félicitations <span class="font-bold">{{ participant.rpName }}</span>, votre Visa pour le Borderland a été accepté!
+              Félicitations <span class="font-bold">Participant</span>, votre Visa pour le Borderland a été accepté!
             </p>
             
             <p class="text-amber-200 text-center mb-6">
-              Votre numéro de participant est: <span class="font-mono bg-amber-800/30 px-3 py-1 rounded">{{ participant.registrationId }}</span>
+              Votre numéro de participant est: <span class="font-mono bg-amber-800/30 px-3 py-1 rounded">{{ participantId }}</span>
             </p>
             
             <div class="border-t border-amber-600/20 pt-6 mt-6">
               <p class="text-amber-100 mb-4">Prochaines étapes:</p>
               <ul class="list-disc pl-6 space-y-2 text-amber-200">
                 <li>Rejoignez notre serveur Discord pour plus d'informations</li>
-                <li>Surveillez votre email ({{ participant.email }}) pour recevoir les détails de connexion</li>
+                <li>Surveillez votre email pour recevoir les détails de connexion</li>
                 <li>Préparez-vous mentalement aux jeux qui vous attendent</li>
               </ul>
             </div>
@@ -123,30 +97,11 @@
   </template>
   
   <script setup>
-  import { ref, reactive, onMounted, computed } from 'vue';
-  import { useRoute } from 'vue-router';
+  import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+  import { useRoute } from '#app';
   
   const route = useRoute();
-  const id = route.params.id;
-  
-  // États
-  const participant = ref(null);
-  const isLoading = ref(true);
-  const error = ref(null);
-  
-  // Récupérer les données du participant depuis l'API
-  const fetchParticipant = async () => {
-    try {
-      isLoading.value = true;
-      const response = await $fetch(`/api/participants/${id}`);
-      participant.value = response.participant;
-      isLoading.value = false;
-    } catch (e) {
-      console.error('Erreur lors de la récupération des données:', e);
-      error.value = 'Impossible de trouver votre inscription. Vérifiez votre numéro de participant ou réessayez plus tard.';
-      isLoading.value = false;
-    }
-  };
+  const participantId = computed(() => route.params.id || 'ID-INCONNU');
   
   // Configuration du compte à rebours
   const days = ref(0);
@@ -179,26 +134,25 @@
   
   let countdownTimer;
   
-  onMounted(async () => {
-    // Récupérer les données du participant
-    await fetchParticipant();
+  onMounted(() => {
+    // Animation du conteneur de confirmation
+    setTimeout(() => {
+      const container = document.querySelector('.confirmation-container');
+      if (container) {
+        container.classList.add('visible');
+      }
+    }, 300);
     
     // Initialiser le compte à rebours
     updateCountdown();
     countdownTimer = setInterval(updateCountdown, 1000);
-    
-    // Animation de la carte de confirmation
-    const confirmationContainer = document.querySelector('.confirmation-container');
-    if (confirmationContainer) {
-      setTimeout(() => {
-        confirmationContainer.classList.add('visible');
-      }, 300);
-    }
-    
-    // Nettoyage à la destruction du composant
-    return () => {
+  });
+  
+  // Nettoyage à la destruction du composant
+  onBeforeUnmount(() => {
+    if (countdownTimer) {
       clearInterval(countdownTimer);
-    };
+    }
   });
   </script>
   
@@ -212,13 +166,13 @@
   }
   
   /* Animation du conteneur de confirmation */
-  .confirmation-container, .error-container {
+  .confirmation-container {
     opacity: 0;
     transform: translateY(20px);
     transition: opacity 0.8s ease, transform 0.8s ease;
   }
   
-  .confirmation-container.visible, .error-container.visible {
+  .confirmation-container.visible {
     opacity: 1;
     transform: translateY(0);
   }
@@ -300,18 +254,74 @@
     }
   }
   
-  /* Loader */
-  .loader {
-    border: 5px solid rgba(245, 158, 11, 0.2);
-    border-radius: 50%;
-    border-top: 5px solid rgba(245, 158, 11, 0.8);
-    width: 50px;
-    height: 50px;
-    animation: spin 1s linear infinite;
+  /* Card glow container */
+  .card-glow-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: -1;
   }
   
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+  .card-glow-container::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(circle, rgba(255, 183, 0, 0.3), transparent 70%);
+    filter: blur(20px);
+    animation: footerGlow 10s ease-in-out infinite;
+  }
+  
+  @keyframes footerGlow {
+    0%, 100% {
+      opacity: 0.3;
+      transform: translateX(-50%) scale(1);
+    }
+    50% {
+      opacity: 0.5;
+      transform: translateX(-50%) scale(1.5);
+    }
+  }
+  
+  /* Effets de lien sociaux */
+  .social-link {
+    position: relative;
+    transition: all 0.3s ease;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    overflow: hidden;
+  }
+  
+  .social-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(145, 70, 255, 0.1);
+    z-index: -1;
+    transform: scale(0);
+    transition: transform 0.3s ease;
+    border-radius: 0.5rem;
+  }
+  
+  .social-link:hover::before {
+    transform: scale(1);
+  }
+  
+  .social-link:hover svg {
+    transform: scale(1.2);
+    filter: drop-shadow(0 0 3px rgba(145, 70, 255, 0.5));
+  }
+  
+  .social-link svg {
+    transition: all 0.3s ease;
   }
   </style>

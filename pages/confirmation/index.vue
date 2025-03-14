@@ -9,10 +9,9 @@
 
 <script setup>
 import { onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 
 const route = useRoute();
-const router = useRouter();
 
 onMounted(() => {
   // Récupération des données de l'URL
@@ -20,10 +19,10 @@ onMounted(() => {
   
   if (id) {
     // Rediriger vers la nouvelle page dynamique
-    router.replace(`/confirmation/${id}`);
+    navigateTo(`/confirmation/${id}`);
   } else {
     // Rediriger vers la page d'accueil si aucun ID
-    router.replace('/');
+    navigateTo('/');
   }
 });
 </script>

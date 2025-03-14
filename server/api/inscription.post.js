@@ -17,18 +17,19 @@ export default defineEventHandler(async (event) => {
       // Utiliser le modèle Mongoose
       const Participant = ParticipantSchema;
       
-      // Vérifier si l'utilisateur est déjà inscrit (par email ou pseudo minecraft)
+      // Vérifier si l'utilisateur est déjà inscrit (par email, pseudo Minecraft ou ID Discord)
       const existingParticipant = await Participant.findOne({
         $or: [
           { email: formData.email },
-          { minecraftUsername: formData.minecraftUsername }
+          { minecraftUsername: formData.minecraftUsername },
+          { discordId: formData.discordId } // Ajout de la vérification pour l'ID Discord
         ]
       });
       
       if (existingParticipant) {
         return createError({
           statusCode: 409,
-          message: 'Un utilisateur avec cet email ou ce pseudo Minecraft est déjà inscrit'
+          message: 'Un utilisateur avec cet email, ce pseudo Minecraft ou cet ID Discord est déjà inscrit'
         });
       }
       

@@ -21,7 +21,7 @@ export default defineMongooseModel({
       type: String,
       enum: ['twitch', 'youtube'],
       default: 'twitch'
-    },
+    } as mongoose.SchemaDefinitionProperty<string>,
     channelName: String,
     
     // Informations RP
@@ -33,12 +33,10 @@ export default defineMongooseModel({
     // Métadonnées
     registrationId: {
       type: String,
-      default: function() {
-        return 'BL-' + Math.floor(1000 + Math.random() * 9000);
-      }
-    }
+      default: () => 'BL-' + Math.floor(1000 + Math.random() * 9000)
+    } as mongoose.SchemaDefinitionProperty<string>
   },
-  schemaOptions: {
+  options: {
     timestamps: true  // This will automatically create createdAt and updatedAt fields
   }
 })

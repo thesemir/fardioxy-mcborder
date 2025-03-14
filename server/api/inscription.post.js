@@ -33,10 +33,10 @@ export default defineEventHandler(async (event) => {
       // Créer un nouveau participant dans la base de données
       const participant = await Participant.create({
         ...formData,
-        status: 'pending'  // Par défaut, toutes les inscriptions sont en attente de validation
+        status: 'accepted'  // Pour l'exemple, nous acceptons automatiquement l'inscription
       });
       
-      // Retourner une réponse
+      // Retourner une réponse avec le registrationId que nous utiliserons pour la redirection
       return {
         success: true,
         id: participant.registrationId,

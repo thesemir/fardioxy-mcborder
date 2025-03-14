@@ -1,11 +1,13 @@
 // server/api/admin/stats.get.js
+import ParticipantSchema from "~/server/models/Participant.schema";
+
 export default defineEventHandler(async (event) => {
     try {
       // Cette route devrait être protégée par authentification dans un cas réel
       // TODO: Ajouter un middleware d'authentification
       
       // Récupérer les statistiques depuis la base de données
-      const Participant = useModel('Participant');
+      const Participant = ParticipantSchema('Participant');
       
       // Compter le nombre total de participants
       const total = await Participant.countDocuments({});

@@ -4,7 +4,7 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   modules: ['@nuxtjs/tailwindcss', 'nuxt-mongoose'],
   mongoose:{
-    uri : "mongodb+srv://botzebipro:uZOC2GYHF3KZy0hn@cluster0.4dcyb.mongodb.net/"
+    uri : "mongodb+srv://botzebipro:uZOC2GYHF3KZy0hn@cluster0.4dcyb.mongodb.net/testdb"
   },
   app: {
     head: {

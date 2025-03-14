@@ -1,44 +1,46 @@
+// server/api/participants/[id].get.js
 import ParticipantSchema from "~/server/models/Participant.schema";
 
-// server/api/admin/participants.get.js
 export default defineEventHandler(async (event) => {
     try {
-      // Cette route devrait être protégée par authentification dans un cas réel
-      // TODO: Ajouter un middleware d'authentification
+      const id = event.context.params.id;
       
-      // Récupérer les participants depuis la base de données
+      if (!id) {
+        return createError({
+          statusCode: 400,
+          message: 'ID de participant manquant'
+        });
+      }
+      
+      // Récupérer le participant depuis la base de données
       const Participant = ParticipantSchema('Participant');
+      const participant = await Participant.findOne({
+        $or: [
+          { _id: id },
+          { registrationId: id }
+        ]
+      }).select('-__v');
       
-      // Récupérer tous les participants (avec pagination basique)
-      const page = parseInt(getQuery(event).page) || 1;
-      const limit = parseInt(getQuery(event).limit) || 10;
-      const skip = (page - 1) * limit;
+      if (!participant) {
+        return createError({
+          statusCode: 404,
+          message: 'Participant non trouvé'
+        });
+      }
       
-      // Requête avec projection pour exclure certains champs sensibles
-      const participants = await Participant.find({})
-        .select('-__v')
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit);
-      
-      const total = await Participant.countDocuments({});
+      // Convertir l'objet Mongoose en objet JavaScript simple
+      const participantObj = participant.toObject();
       
       return {
-        participants,
-        pagination: {
-          total,
-          page,
-          limit,
-          pages: Math.ceil(total / limit)
-        }
+        participant: participantObj
       };
       
     } catch (error) {
-      console.error('Erreur lors de la récupération des participants:', error);
+      console.error('Erreur lors de la récupération du participant:', error);
       
       return createError({
         statusCode: 500,
-        message: 'Une erreur est survenue lors de la récupération des participants'
+        message: 'Une erreur est survenue lors de la récupération du participant'
       });
     }
   });

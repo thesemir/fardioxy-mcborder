@@ -1,3 +1,5 @@
+import ParticipantSchema from "../models/Participant.schema";
+
 // server/api/inscription.post.js
 export default defineEventHandler(async (event) => {
     try {
@@ -12,11 +14,12 @@ export default defineEventHandler(async (event) => {
         });
       }
       
-      // Utiliser le modèle Mongoose pour enregistrer les données
-      const Participant = useModel('Participant');
+      // Utiliser le modèle Mongoose
+      // Dans Nuxt Mongoose, nous utilisons useModel pour accéder au modèle
+      const Participant = ParticipantSchema();
       
       // Vérifier si l'utilisateur est déjà inscrit (par email ou pseudo minecraft)
-      const existingParticipant = await Participant.findOne({
+      const existingParticipant = await ParticipantSchema.findOne({
         $or: [
           { email: formData.email },
           { minecraftUsername: formData.minecraftUsername }
@@ -31,7 +34,7 @@ export default defineEventHandler(async (event) => {
       }
       
       // Créer un nouveau participant dans la base de données
-      const participant = await Participant.create({
+      const participant = await ParticipantSchema.create({
         ...formData,
         status: 'accepted'  // Pour l'exemple, nous acceptons automatiquement l'inscription
       });

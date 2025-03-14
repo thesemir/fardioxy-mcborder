@@ -1,4 +1,6 @@
 // server/api/admin/participant/[id]/status.patch.js
+import ParticipantSchema from "~/server/models/Participant.schema";
+
 export default defineEventHandler(async (event) => {
     try {
       // Cette route devrait être protégée par authentification dans un cas réel
@@ -17,7 +19,7 @@ export default defineEventHandler(async (event) => {
       }
       
       // Récupérer le participant depuis la base de données
-      const Participant = useModel('Participant');
+      const Participant = ParticipantSchema('Participant');
       const participant = await Participant.findOne({ 
         $or: [
           { _id: id },

@@ -373,6 +373,7 @@ const submitForm = async () => {
     console.log("Réponse de l'API:", response);
     
     // Vérification du format de la réponse
+    
     if (response && response.id) {
       console.log(`ID de confirmation reçu: ${response.id}`);
       

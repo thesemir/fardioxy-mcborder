@@ -1,4 +1,3 @@
-// server/api/inscription.post.js
 import ParticipantSchema from "../models/Participant.schema";
 
 export default defineEventHandler(async (event) => {
@@ -14,6 +13,18 @@ export default defineEventHandler(async (event) => {
         });
       }
       
+      // Validation de l'email (si présent dans formData)
+      if (formData.email) {
+        // Expression régulière pour la validation d'email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+          return createError({
+            statusCode: 400,
+            message: 'Format d\'email invalide'
+          });
+        }
+      }
+      
       // Utiliser le modèle Mongoose
       const Participant = ParticipantSchema;
       
@@ -22,7 +33,7 @@ export default defineEventHandler(async (event) => {
         $or: [
           { email: formData.email },
           { minecraftUsername: formData.minecraftUsername },
-          { discordId: formData.discordId } // Ajout de la vérification pour l'ID Discord
+          { discordId: formData.discordId }
         ]
       });
       

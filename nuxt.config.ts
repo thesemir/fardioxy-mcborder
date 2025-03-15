@@ -2,9 +2,17 @@
 export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
   devtools: { enabled: false },
-  modules: ['@nuxtjs/tailwindcss', 'nuxt-mongoose'],
+  modules: ['@nuxtjs/tailwindcss', 'nuxt-mongoose', 'nuxt-auth-utils'],
   mongoose:{
     uri : "mongodb+srv://botzebipro:uZOC2GYHF3KZy0hn@cluster0.4dcyb.mongodb.net/testdb"
+  },
+  runtimeConfig:{
+    oauth:{
+      discord:{
+        clientId:process.env.CLIENT_ID,
+        clientSecret:process.env.CLIENT_SEC
+      }
+    }
   },
   app: {
     head: {

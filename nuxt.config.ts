@@ -4,7 +4,7 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   modules: ['@nuxtjs/tailwindcss', 'nuxt-mongoose', 'nuxt-auth-utils'],
   mongoose:{
-    uri : "mongodb+srv://botzebipro:uZOC2GYHF3KZy0hn@cluster0.4dcyb.mongodb.net/testdb"
+    uri : "mongodb+srv://botzebipro:uZOC2GYHF3KZy0hn@cluster0.4dcyb.mongodb.net/aibevent"
   },
   runtimeConfig:{
     oauth:{
